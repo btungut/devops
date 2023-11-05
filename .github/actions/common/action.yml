@@ -2,6 +2,7 @@ name: common
 description: Common action
 
 inputs:
+  step
   yq-version:
     description: "yq version"
     required: true
@@ -18,8 +19,14 @@ outputs:
 runs:
   using: "composite"
   steps:
+
     - name: install yq
-      uses: mikefarah/yq@v${{ github.event.inputs.yq-version }}
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq &&\
+          chmod +x /usr/bin/yq
 
     - name: install apt packages
       shell: bash
