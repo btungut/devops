@@ -19,7 +19,7 @@ runs:
   using: "composite"
   steps:
     - name: install yq
-      uses: mikefarah/yq@v${{ inputs.yq-version }}
+      uses: mikefarah/yq@v${{ github.event.inputs.yq-version }}
 
     - name: install apt packages
       shell: bash
