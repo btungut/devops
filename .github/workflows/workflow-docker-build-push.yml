@@ -80,6 +80,7 @@ jobs:
 
           echo "rev-date=${{ steps.common-vars.outputs.rev-date }}"
           echo "rev-unique=${{ steps.common-vars.outputs.rev-unique }}"
+          echo "app-name = ${{ inputs.app-name }}"
           yq --version
 
           tree .
