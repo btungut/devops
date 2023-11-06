@@ -31,6 +31,11 @@ on:
         type: string
         description: 'Docker username for login to docker registry'
 
+      docker-repository:
+        required: true
+        type: string
+        description: 'Docker repository name'
+
     secrets:
       docker-password:
         required: true
@@ -72,6 +77,19 @@ jobs:
       - uses: btungut/devops/.github/actions/git-checkout@master
         with:
           gitToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - shell: bash
+        name: validation
+        run: |
+          set -euo pipefail
+          [[ -z "${{ inputs.app-name }}" ]] && { echo "app-name is empty"; exit 1; }
+          [[ -z "${{ inputs.build-docker-context-path }}" ]] && { echo "build-docker-context-path is empty"; exit 1; }
+          [[ -z "${{ inputs.build-docker-file-path }}" ]] && { echo "build-docker-file-path is empty"; exit 1; }
+          [[ -z "${{ inputs.docker-server }}" ]] && { echo "docker-server is empty"; exit 1; }
+          [[ -z "${{ inputs.docker-username }}" ]] && { echo "docker-username is empty"; exit 1; }
+          [[ -z "${{ inputs.docker-repository }}" ]] && { echo "docker-repository is empty"; exit 1; }
+          [[ -z "${{ secrets.docker-password }}" ]] && { echo "docker-password is empty"; exit 1; }
+
 
       - shell: bash
         name: display 
@@ -116,7 +134,8 @@ jobs:
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_OUTPUT
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE"
 
-          DOCKER_IMAGE="${{ inputs.docker-server }}/${{ inputs.app-name }}:${{ steps.common-vars.outputs.rev-unique }}"
+
+          DOCKER_IMAGE="${{ inputs.docker-repository }}/${{ inputs.app-name }}:${GIT_COMMIT_ID}-${{ steps.common-vars.outputs.rev-unique }}"
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_OUTPUT
           echo "DOCKER_IMAGE=$DOCKER_IMAGE"
