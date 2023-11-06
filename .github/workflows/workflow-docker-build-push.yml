@@ -3,7 +3,6 @@ on:
     inputs:
       
       runs-on:
-        default: ubuntu-latest
         type: string
         description: 'Runs on'
 
