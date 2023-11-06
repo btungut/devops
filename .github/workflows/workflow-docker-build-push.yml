@@ -79,27 +79,12 @@ jobs:
           gitToken: ${{ secrets.GITHUB_TOKEN }}
 
       - shell: bash
-        name: validation
-        run: |
-          set -euo pipefail
-          [[ -z "${{ inputs.app-name }}" ]] && { echo "app-name is empty"; exit 1; }
-          [[ -z "${{ inputs.build-docker-context-path }}" ]] && { echo "build-docker-context-path is empty"; exit 1; }
-          [[ -z "${{ inputs.build-docker-file-path }}" ]] && { echo "build-docker-file-path is empty"; exit 1; }
-          [[ -z "${{ inputs.docker-server }}" ]] && { echo "docker-server is empty"; exit 1; }
-          [[ -z "${{ inputs.docker-username }}" ]] && { echo "docker-username is empty"; exit 1; }
-          [[ -z "${{ inputs.docker-repository }}" ]] && { echo "docker-repository is empty"; exit 1; }
-          [[ -z "${{ secrets.docker-password }}" ]] && { echo "docker-password is empty"; exit 1; }
-
-
-      - shell: bash
         name: display 
         run: |
           set -euo pipefail
 
           echo "rev-date=${{ steps.common-vars.outputs.rev-date }}"
           echo "rev-unique=${{ steps.common-vars.outputs.rev-unique }}"
-          echo "app-name = ${{ inputs.app-name }}"
-          yq --version
 
           tree .
 
@@ -107,6 +92,11 @@ jobs:
         id: git-variables
         shell: bash
         run: |
+          [[ -z "${{ inputs.app-name }}" ]] && { echo "app-name is empty"; exit 1; }
+          [[ -z "${{ inputs.build-docker-context-path }}" ]] && { echo "build-docker-context-path is empty"; exit 1; }
+          [[ -z "${{ inputs.build-docker-file-path }}" ]] && { echo "build-docker-file-path is empty"; exit 1; }
+          [[ -z "${{ inputs.docker-repository }}" ]] && { echo "docker-repository is empty"; exit 1; }
+
           set -euo pipefail
 
           CTX="${{ inputs.build-docker-context-path }}"
