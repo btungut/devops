@@ -47,6 +47,10 @@ on:
         value: ${{ jobs.build_and_push.outputs.GIT_COMMIT_DATE }}
       DOCKER_IMAGE:
         value: ${{ jobs.build_and_push.outputs.DOCKER_IMAGE }}
+      REV_DATE:
+        value: ${{ jobs.build_and_push.outputs.REV_DATE }}
+      REV_UNIQUE:
+        value: ${{ jobs.build_and_push.outputs.REV_UNIQUE }}
 
       
 
@@ -58,7 +62,9 @@ jobs:
       GIT_COMMIT_MSG: ${{ steps.git-variables.outputs.GIT_COMMIT_MSG }}
       GIT_COMITTER: ${{ steps.git-variables.outputs.GIT_COMITTER }}
       GIT_COMMIT_DATE: ${{ steps.git-variables.outputs.GIT_COMMIT_DATE }}
-      DOCKER_IMAGE: ${{ steps.git-variables.outputs.DOCKER_TAG }}
+      DOCKER_IMAGE: ${{ steps.git-variables.outputs.DOCKER_IMAGE }}
+      REV_DATE: ${{ steps.common-vars.outputs.rev-date }}
+      REV_UNIQUE: ${{ steps.common-vars.outputs.rev-unique }}
     steps:
       - uses: btungut/devops/.github/actions/common@master
         id: common-vars
@@ -109,10 +115,10 @@ jobs:
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_OUTPUT
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE"
 
-          DOCKER_TAG="${{ inputs.docker-server }}/${{ inputs.app-name }}:${{ steps.common-vars.outputs.rev-unique }}"
-          echo "DOCKER_IMAGE=$DOCKER_TAG" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE=$DOCKER_TAG" >> $GITHUB_OUTPUT
-          echo "DOCKER_IMAGE=$DOCKER_TAG"
+          DOCKER_IMAGE="${{ inputs.docker-server }}/${{ inputs.app-name }}:${{ steps.common-vars.outputs.rev-unique }}"
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_OUTPUT
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE"
 
         working-directory: app
 
@@ -145,4 +151,4 @@ jobs:
       #       GITHUB_RUN_ID=${{ github.run_id }}
       #       GITHUB_RUN_NUMBER=${{ github.run_number }}
       #     tags: |
-      #       ${{ steps.git-variables.outputs.DOCKER_TAG }}
+      #       ${{ steps.git-variables.outputs.DOCKER_IMAGE }}
