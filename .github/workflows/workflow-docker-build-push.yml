@@ -32,11 +32,6 @@ on:
         type: string
         description: 'Docker username for login to docker registry'
 
-      docker-image-tag:
-        required: true
-        type: string
-        description: 'Docker image tag'
-
     secrets:
       docker-password:
         required: true
@@ -47,16 +42,30 @@ on:
 jobs:
   build_and_push:
     runs-on: ${{ inputs.runs-on }}
-    env:
-      DOCKER_IMAGE: ${{ inputs.docker-server }}/${{ inputs.app-name }}:${{ inputs.docker-image-tag }}
     outputs:
       GIT_COMMIT_ID: ${{ steps.git-variables.outputs.GIT_COMMIT_ID }}
       GIT_COMMIT_MSG: ${{ steps.git-variables.outputs.GIT_COMMIT_MSG }}
       GIT_COMITTER: ${{ steps.git-variables.outputs.GIT_COMITTER }}
       GIT_COMMIT_DATE: ${{ steps.git-variables.outputs.GIT_COMMIT_DATE }}
-      DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
+      DOCKER_IMAGE: ${{ steps.git-variables.outputs.DOCKER_TAG }}
     steps:
+      - uses: btungut/devops/.github/actions/common@master
+        id: common-vars
+
       - uses: btungut/devops/.github/actions/git-checkout@master
+        with:
+          gitToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - shell: bash
+        name: display 
+        run: |
+          set -euo pipefail
+
+          echo "rev-date=${{ steps.common-vars.outputs.rev-date }}"
+          echo "rev-unique=${{ steps.common-vars.outputs.rev-unique }}"
+          yq --version
+
+          tree .
 
       - name: git variables of app
         id: git-variables
@@ -88,6 +97,12 @@ jobs:
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_ENV
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_OUTPUT
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE"
+
+          DOCKER_TAG="${{ inputs.docker-server }}/${{ inputs.app-name }}:${{ steps.common-vars.outputs.rev-unique }}"
+          echo "DOCKER_IMAGE=$DOCKER_TAG" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "DOCKER_IMAGE=$DOCKER_TAG"
+
         working-directory: app
 
       - name: docker build init
@@ -119,4 +134,4 @@ jobs:
             GITHUB_RUN_ID=${{ github.run_id }}
             GITHUB_RUN_NUMBER=${{ github.run_number }}
           tags: |
-            ${{ env.DOCKER_IMAGE }}
+            ${{ steps.git-variables.outputs.DOCKER_TAG }}
