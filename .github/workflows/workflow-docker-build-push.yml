@@ -36,6 +36,18 @@ on:
         required: true
         description: 'Docker password for login to docker registry'
 
+    outputs:
+      GIT_COMMIT_ID:
+        value: ${{ jobs.build_and_push.outputs.GIT_COMMIT_ID }}
+      GIT_COMMIT_MSG:
+        value: ${{ jobs.build_and_push.outputs.GIT_COMMIT_MSG }}
+      GIT_COMITTER:
+        value: ${{ jobs.build_and_push.outputs.GIT_COMITTER }}
+      GIT_COMMIT_DATE:
+        value: ${{ jobs.build_and_push.outputs.GIT_COMMIT_DATE }}
+      DOCKER_IMAGE:
+        value: ${{ jobs.build_and_push.outputs.DOCKER_IMAGE }}
+
       
 
 jobs:
