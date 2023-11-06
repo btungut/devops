@@ -1,0 +1,122 @@
+on:
+  workflow_call: 
+    inputs:
+      
+      runs-on:
+        default: ubuntu-latest
+        type: string
+        description: 'Runs on'
+
+      app-name:
+        required: true
+        type: string
+        description: 'App name'
+
+      build-docker-context-path:
+        required: true
+        type: string
+        description: 'Docker context path'
+
+      build-docker-file-path:
+        required: true
+        type: string
+        description: 'Dockerfile path'
+
+      docker-server:
+        required: true
+        type: string
+        description: 'Docker registry server'
+
+      docker-username:
+        required: true
+        type: string
+        description: 'Docker username for login to docker registry'
+
+      docker-image-tag:
+        required: true
+        type: string
+        description: 'Docker image tag'
+
+    secrets:
+      docker-password:
+        required: true
+        description: 'Docker password for login to docker registry'
+
+      
+
+jobs:
+  build_and_push:
+    runs-on: ${{ inputs.runs-on }}
+    env:
+      DOCKER_IMAGE: ${{ inputs.docker-server }}/${{ inputs.app-name }}:${{ inputs.docker-image-tag }}
+    outputs:
+      GIT_COMMIT_ID: ${{ steps.git-variables.outputs.GIT_COMMIT_ID }}
+      GIT_COMMIT_MSG: ${{ steps.git-variables.outputs.GIT_COMMIT_MSG }}
+      GIT_COMITTER: ${{ steps.git-variables.outputs.GIT_COMITTER }}
+      GIT_COMMIT_DATE: ${{ steps.git-variables.outputs.GIT_COMMIT_DATE }}
+      DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
+    steps:
+      - uses: btungut/devops/.github/actions/git-checkout@master
+
+      - name: git variables of app
+        id: git-variables
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CTX="${{ inputs.build-docker-context-path }}"
+          [[ -d "$CTX" ]] || { echo "Context path '$CTX' does not exist"; exit 1; }
+          FILE="${{ inputs.build-docker-file-path }}"
+          [[ -f "$FILE" ]] || { echo "File path '$FILE' does not exist"; exit 1; }
+
+          GIT_COMMIT_ID=`git log -n 1 --format="%h" -- $CTX $FILE`
+          echo "GIT_COMMIT_ID=$GIT_COMMIT_ID" >> $GITHUB_ENV
+          echo "GIT_COMMIT_ID=$GIT_COMMIT_ID" >> $GITHUB_OUTPUT
+          echo "GIT_COMMIT_ID=$GIT_COMMIT_ID" 
+
+          GIT_COMMIT_MSG=`git log -n 1 --format="%s (%h)" -- $CTX $FILE`
+          echo "GIT_COMMIT_MSG=$GIT_COMMIT_MSG" >> $GITHUB_ENV
+          echo "GIT_COMMIT_MSG=$GIT_COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "GIT_COMMIT_MSG=$GIT_COMMIT_MSG"
+
+          GIT_COMITTER=`git log -n 1 --format="%cn" -- $CTX $FILE`
+          echo "GIT_COMITTER=$GIT_COMITTER" >> $GITHUB_ENV
+          echo "GIT_COMITTER=$GIT_COMITTER" >> $GITHUB_OUTPUT
+          echo "GIT_COMITTER=$GIT_COMITTER"
+
+          GIT_COMMIT_DATE=`git log -n 1 --format="%ci" -- $CTX $FILE`
+          echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_ENV
+          echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_OUTPUT
+          echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE"
+        working-directory: app
+
+      - name: docker build init
+        uses: docker/setup-buildx-action@v3
+
+      - name: docker login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.docker-server }}
+          username: ${{ inputs.docker-username }}
+          password: ${{ secrets.docker-password }}
+
+      - name: docker build & push
+        uses: docker/build-push-action@v5 
+        id: docker-build
+        with:
+          context: app/${{ inputs.build-docker-context-path }}
+          file: app/${{ inputs.build-docker-file-path }}
+          push: true
+          labels: |
+            GIT_COMMIT_ID=${{ steps.git-variables.outputs.GIT_COMMIT_ID }}
+            GIT_COMMIT_MSG=${{ steps.git-variables.outputs.GIT_COMMIT_MSG }}
+            GIT_COMITTER=${{ steps.git-variables.outputs.GIT_COMITTER }}
+            GIT_COMMIT_DATE=${{ steps.git-variables.outputs.GIT_COMMIT_DATE }}
+            GITHUB_ACTOR=${{ github.actor }}
+            GITHUB_REPOSITORY=${{ github.repository }}
+            GITHUB_SHA=${{ github.sha }}
+            GITHUB_REF=${{ github.ref }}
+            GITHUB_RUN_ID=${{ github.run_id }}
+            GITHUB_RUN_NUMBER=${{ github.run_number }}
+          tags: |
+            ${{ env.DOCKER_IMAGE }}
