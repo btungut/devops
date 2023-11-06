@@ -52,6 +52,8 @@ on:
         value: ${{ jobs.build_and_push.outputs.GIT_COMMIT_DATE }}
       DOCKER_IMAGE:
         value: ${{ jobs.build_and_push.outputs.DOCKER_IMAGE }}
+      DOCKER_TAG:
+        value: ${{ jobs.build_and_push.outputs.DOCKER_TAG }}
       REV_DATE:
         value: ${{ jobs.build_and_push.outputs.REV_DATE }}
       REV_UNIQUE:
@@ -68,6 +70,7 @@ jobs:
       GIT_COMITTER: ${{ steps.git-variables.outputs.GIT_COMITTER }}
       GIT_COMMIT_DATE: ${{ steps.git-variables.outputs.GIT_COMMIT_DATE }}
       DOCKER_IMAGE: ${{ steps.git-variables.outputs.DOCKER_IMAGE }}
+      DOCKER_TAG: ${{ steps.git-variables.outputs.DOCKER_TAG }}
       REV_DATE: ${{ steps.common-vars.outputs.rev-date }}
       REV_UNIQUE: ${{ steps.common-vars.outputs.rev-unique }}
     steps:
@@ -124,8 +127,12 @@ jobs:
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_OUTPUT
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE"
 
+          DOCKER_TAG="${GIT_COMMIT_ID}-${{ steps.common-vars.outputs.rev-unique }}"
+          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "DOCKER_TAG=$DOCKER_TAG"
 
-          DOCKER_IMAGE="${{ inputs.docker-repository }}/${{ inputs.app-name }}:${GIT_COMMIT_ID}-${{ steps.common-vars.outputs.rev-unique }}"
+          DOCKER_IMAGE="${{ inputs.docker-repository }}/${{ inputs.app-name }}"
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_OUTPUT
           echo "DOCKER_IMAGE=$DOCKER_IMAGE"
@@ -161,4 +168,4 @@ jobs:
       #       GITHUB_RUN_ID=${{ github.run_id }}
       #       GITHUB_RUN_NUMBER=${{ github.run_number }}
       #     tags: |
-      #       ${{ steps.git-variables.outputs.DOCKER_IMAGE }}
+      #       ${{ steps.git-variables.outputs.DOCKER_IMAGE }}:${{ steps.git-variables.outputs.DOCKER_TAG }}
