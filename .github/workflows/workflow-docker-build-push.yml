@@ -36,6 +36,11 @@ on:
         type: string
         description: 'Docker repository name'
 
+      docker-build-only:
+        required: false
+        type: boolean
+        description: 'Docker build only'
+
     secrets:
       docker-password:
         required: true
@@ -155,7 +160,7 @@ jobs:
         with:
           context: app/${{ inputs.build-docker-context-path }}
           file: app/${{ inputs.build-docker-file-path }}
-          push: true
+          push: ${{ !inputs.docker-build-only }}
           labels: |
             GIT_COMMIT_ID=${{ steps.git-variables.outputs.GIT_COMMIT_ID }}
             GIT_COMMIT_MSG=${{ steps.git-variables.outputs.GIT_COMMIT_MSG }}
