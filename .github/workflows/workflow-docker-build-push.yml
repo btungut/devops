@@ -36,6 +36,11 @@ on:
         type: string
         description: 'Docker repository name'
 
+      docker-tag:
+        required: false
+        type: string
+        description: 'Docker image tag'
+
       docker-build-only:
         required: false
         default: false
@@ -133,7 +138,8 @@ jobs:
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE" >> $GITHUB_OUTPUT
           echo "GIT_COMMIT_DATE=$GIT_COMMIT_DATE"
 
-          DOCKER_TAG="${GIT_COMMIT_ID}-${{ steps.common-vars.outputs.rev-unique }}"
+          DOCKER_TAG="${{ inputs.docker-tag }}"
+          [[ -z "$DOCKER_TAG" ]] && DOCKER_TAG="$GIT_COMMIT_ID-${{ steps.common-vars.outputs.rev-unique }}"
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_OUTPUT
           echo "DOCKER_TAG=$DOCKER_TAG"
