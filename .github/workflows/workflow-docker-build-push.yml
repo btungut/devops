@@ -56,8 +56,8 @@ on:
         value: ${{ jobs.build_and_push.outputs.GIT_COMITTER }}
       GIT_COMMIT_DATE:
         value: ${{ jobs.build_and_push.outputs.GIT_COMMIT_DATE }}
-      DOCKER_IMAGE:
-        value: ${{ jobs.build_and_push.outputs.DOCKER_IMAGE }}
+      DOCKER_REPO:
+        value: ${{ jobs.build_and_push.outputs.DOCKER_REPO }}
       DOCKER_TAG:
         value: ${{ jobs.build_and_push.outputs.DOCKER_TAG }}
       REV_DATE:
@@ -75,7 +75,7 @@ jobs:
       GIT_COMMIT_MSG: ${{ steps.git-variables.outputs.GIT_COMMIT_MSG }}
       GIT_COMITTER: ${{ steps.git-variables.outputs.GIT_COMITTER }}
       GIT_COMMIT_DATE: ${{ steps.git-variables.outputs.GIT_COMMIT_DATE }}
-      DOCKER_IMAGE: ${{ steps.git-variables.outputs.DOCKER_IMAGE }}
+      DOCKER_REPO: ${{ steps.git-variables.outputs.DOCKER_REPO }}
       DOCKER_TAG: ${{ steps.git-variables.outputs.DOCKER_TAG }}
       REV_DATE: ${{ steps.common-vars.outputs.rev-date }}
       REV_UNIQUE: ${{ steps.common-vars.outputs.rev-unique }}
@@ -138,10 +138,10 @@ jobs:
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_OUTPUT
           echo "DOCKER_TAG=$DOCKER_TAG"
 
-          DOCKER_IMAGE="${{ inputs.docker-repository }}/${{ inputs.app-name }}"
-          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_OUTPUT
-          echo "DOCKER_IMAGE=$DOCKER_IMAGE"
+          DOCKER_REPO="${{ inputs.docker-server }}/${{ inputs.docker-repository }}/${{ inputs.app-name }}"
+          echo "DOCKER_REPO=$DOCKER_REPO" >> $GITHUB_ENV
+          echo "DOCKER_REPO=$DOCKER_REPO" >> $GITHUB_OUTPUT
+          echo "DOCKER_REPO=$DOCKER_REPO"
 
         working-directory: app
 
@@ -174,4 +174,4 @@ jobs:
             GITHUB_RUN_ID=${{ github.run_id }}
             GITHUB_RUN_NUMBER=${{ github.run_number }}
           tags: |
-            ${{ steps.git-variables.outputs.DOCKER_IMAGE }}:${{ steps.git-variables.outputs.DOCKER_TAG }}
+            ${{ steps.git-variables.outputs.DOCKER_REPO }}:${{ steps.git-variables.outputs.DOCKER_TAG }}

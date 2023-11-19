@@ -1,0 +1,102 @@
+on:
+  workflow_call: 
+    inputs:
+      
+      runs-on:
+        type: string
+        description: 'Runs on'
+
+      app-name:
+        required: true
+        type: string
+        description: 'App name'
+
+      docker-server:
+        required: true
+        type: string
+        description: 'Docker registry server'
+
+      docker-username:
+        required: true
+        type: string
+        description: 'Docker username for login to docker registry'
+
+      docker-repository:
+        required: true
+        type: string
+        description: 'Docker repository name'
+
+      docker-tag-origin:
+        required: true
+        type: string
+        description: 'Docker tag origin'
+
+      docker-tag-new:
+        required: true
+        type: string
+        description: 'Docker tag new'
+
+    secrets:
+      docker-password:
+        required: true
+        description: 'Docker password for login to docker registry'
+
+    outputs:
+      DOCKER_REPO:
+        value: ${{ jobs.docker_tag.outputs.DOCKER_REPO }}
+      DOCKER_TAG:
+        value: ${{ jobs.docker_tag.outputs.DOCKER_TAG }}
+
+      
+jobs:
+  docker_tag:
+    runs-on: ${{ inputs.runs-on }}
+    outputs:
+      DOCKER_REPO: ${{ steps.vars.outputs.DOCKER_REPO }}
+      DOCKER_TAG: ${{ steps.vars.outputs.DOCKER_TAG }}
+    steps:
+
+      - name: vars
+        id: vars
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DOCKER_TAG="${{ inputs.docker-tag-new }}"
+          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
+          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "DOCKER_TAG=$DOCKER_TAG"
+
+          DOCKER_REPO="${{ inputs.docker-server }}/${{ inputs.docker-repository }}/${{ inputs.app-name }}"
+          echo "DOCKER_REPO=$DOCKER_REPO" >> $GITHUB_ENV
+          echo "DOCKER_REPO=$DOCKER_REPO" >> $GITHUB_OUTPUT
+          echo "DOCKER_REPO=$DOCKER_REPO"
+
+
+      - name: docker build init
+        uses: docker/setup-buildx-action@v3
+
+      - name: docker login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.docker-server }}
+          username: ${{ inputs.docker-username }}
+          password: ${{ secrets.docker-password }}
+
+      - name: docker pull
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull ${{ steps.vars.outputs.DOCKER_REPO }}:${{ inputs.docker-tag-origin }}
+          echo -e "--> Docker image pulled from ${{ steps.vars.outputs.DOCKER_REPO }}:${{ inputs.docker-tag-origin }} \n\n"
+
+      - name: docker tag and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          docker tag ${{ steps.vars.outputs.DOCKER_REPO }}:${{ inputs.docker-tag-origin }} ${{ steps.vars.outputs.DOCKER_REPO }}:${{ inputs.docker-tag-new }}
+          echo -e "--> Docker image re-taggged to ${{ steps.vars.outputs.DOCKER_REPO }}:${{ inputs.docker-tag-new }} \n\n"
+
+          docker push ${{ steps.vars.outputs.DOCKER_FULL_NAME }}:${{ inputs.docker-tag-new }}
+          echo -e "--> Docker image pushed to ${{ steps.vars.outputs.DOCKER_REPO }}:${{ inputs.docker-tag-new }} \n\n"
