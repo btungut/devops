@@ -43,7 +43,6 @@ on:
 
       docker-build-only:
         required: false
-        default: false
         type: boolean
         description: 'Docker build only'
 
