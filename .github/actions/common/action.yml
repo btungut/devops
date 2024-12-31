@@ -1,12 +1,6 @@
 name: common
 description: Common action
 
-inputs:
-  yq-version:
-    description: "yq version"
-    required: true
-    default: "4.35.2"
-
 outputs:
   rev-date:
     description: "Revision date"
@@ -14,31 +8,20 @@ outputs:
   rev-unique:
     description: "Revision unique"
     value: ${{ steps.common-vars.outputs.rev-unique }}
+  rev-name:
+    description: "Revision name"
+    value: ${{ steps.common-vars.outputs.rev-name }}
 
 runs:
   using: "composite"
   steps:
 
-    - name: install yq
+    - name: Cleanup workspace
       shell: bash
       run: |
         set -euo pipefail
+        rm -rf $GITHUB_WORKSPACE/*
 
-        wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq &&\
-            chmod +x /usr/bin/yq
-
-        yq --version > /dev/null
-      env:
-        VERSION: ${{ inputs.yq-version }}
-        BINARY: yq_linux_amd64
-
-    - name: install apt packages
-      shell: bash
-      run: |
-        set -euo pipefail
-
-        # sudo apt-get update
-        sudo apt-get install tree -y
 
     - name: Generate and publish common vars
       id: common-vars
@@ -50,8 +33,13 @@ runs:
         echo "rev-date=$REV_DATE" >> $GITHUB_OUTPUT
         echo "rev-date=$REV_DATE"
 
-        RUN_NUMBER=$(printf '%02d\n' "${{ github.run_number }}")
-        RUN_ATTEMPT=$(printf '%02d\n' "${{ github.run_attempt }}")
-        REV_UNIQUE="$RUN_NUMBER-r$RUN_ATTEMPT"
+        RUN_NUMBER=${{ github.run_number }}
+        RUN_ATTEMPT=${{ github.run_attempt }}
+
+        REV_UNIQUE=$((RUN_NUMBER * 100 + RUN_ATTEMPT))
         echo "rev-unique=$REV_UNIQUE" >> $GITHUB_OUTPUT
         echo "rev-unique=$REV_UNIQUE"
+
+        REV_NAME="v${RUN_NUMBER}-r${RUN_ATTEMPT}"
+        echo "rev-name=$REV_NAME" >> $GITHUB_OUTPUT
+        echo "rev-name=$REV_NAME"
