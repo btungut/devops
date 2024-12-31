@@ -42,6 +42,7 @@ runs:
       shell: bash
       run: |
         TMP_DIR="${{ runner.temp }}"
+        mkdir -p $TMP_DIR
         popd $TMP_DIR
         rm -rf ./*
         pushd
