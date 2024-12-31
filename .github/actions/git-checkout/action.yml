@@ -41,9 +41,10 @@ runs:
     - name: clear tmp dir
       shell: bash
       run: |
-        TMP_DIR="${{ runner.temp }}"
         mkdir -p $TMP_DIR
-        popd $TMP_DIR
+        pushd $TMP_DIR
         rm -rf ./*
-        pushd
+        popd
         echo "$TMP_DIR is cleared"
+      env:
+        TMP_DIR: ${{ runner.temp }}
