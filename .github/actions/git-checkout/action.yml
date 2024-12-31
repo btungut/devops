@@ -38,9 +38,11 @@ runs:
         git config --global user.name "github-actions[bot]"
       working-directory: app
 
-    - name: create temp dir
+    - name: clear tmp dir
       shell: bash
       run: |
-        rm -rf $GITHUB_WORKSPACE/tmp
-        mkdir -p $GITHUB_WORKSPACE/tmp
-        echo TMP_DIR=$GITHUB_WORKSPACE/tmp >> $GITHUB_ENV
+        TMP_DIR="${{ runner.temp }}"
+        popd $TMP_DIR
+        rm -rf ./*
+        pushd
+        echo "$TMP_DIR is cleared"
