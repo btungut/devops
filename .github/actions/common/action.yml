@@ -11,6 +11,9 @@ outputs:
   rev-name:
     description: "Revision name"
     value: ${{ steps.common-vars.outputs.rev-name }}
+  branch-version:
+    description: "Branch version"
+    value: ${{ steps.common-vars.outputs.branch-version }}
 
 runs:
   using: "composite"
@@ -43,3 +46,11 @@ runs:
         REV_NAME="v${RUN_NUMBER}-r${RUN_ATTEMPT}"
         echo "rev-name=$REV_NAME" >> $GITHUB_OUTPUT
         echo "rev-name=$REV_NAME"
+
+        BRANCH_POSTFIX=$(echo "${{ github.ref }}" | sed -E 's|(.+)/v?(.+)|\2|')
+        if [[ "$BRANCH_POSTFIX" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "branch-version=$BRANCH_POSTFIX" >> $GITHUB_OUTPUT
+            echo "branch-version=$BRANCH_POSTFIX"
+        else
+            echo "___branch-version is not a semver___"
+        fi
