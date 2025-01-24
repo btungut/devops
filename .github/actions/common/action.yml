@@ -14,6 +14,9 @@ outputs:
   branch-version:
     description: "Branch version"
     value: ${{ steps.common-vars.outputs.branch-version }}
+  workflow-tmp-dir:
+    description: "Workflow tmp dir"
+    value: ${{ steps.tmp-dir.outputs.workflow-tmp-dir }}
 
 runs:
   using: "composite"
@@ -24,7 +27,6 @@ runs:
       run: |
         set -euo pipefail
         rm -rf $GITHUB_WORKSPACE/*
-
 
     - name: Generate and publish common vars
       id: common-vars
@@ -54,3 +56,23 @@ runs:
         else
             echo "___branch-version is not a semver___"
         fi
+
+    - name: Clear and create temp dir
+      id: tmp-dir
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        WORKFLOW_TMP_DIR="./.tmp"
+        WORKFLOW_TMP_DIR=$(cd $WORKFLOW_TMP_DIR && pwd)
+        echo "WORKFLOW_TMP_DIR: $WORKFLOW_TMP_DIR"
+
+        echo "clearing $WORKFLOW_TMP_DIR"
+        rm -rf $WORKFLOW_TMP_DIR
+
+        echo "creating $WORKFLOW_TMP_DIR"
+        mkdir -p $WORKFLOW_TMP_DIR
+
+        echo "WORKFLOW_TMP_DIR is ready!"
+        echo "workflow-tmp-dir=$WORKFLOW_TMP_DIR" >> $GITHUB_OUTPUT
+        echo "workflow-tmp-dir=$WORKFLOW_TMP_DIR"

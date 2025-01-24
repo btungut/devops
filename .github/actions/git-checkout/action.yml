@@ -5,8 +5,9 @@ inputs:
   gitToken:
     required: true
     description: "Git token"
-
-
+  app-fetch-depth:
+    required: false
+    description: "App fetch depth"
 
 runs:
   using: "composite"
@@ -15,7 +16,6 @@ runs:
     - name: checkout devops
       uses: actions/checkout@v4
       with:
-        fetch-depth: 100
         repository: ${{ github.repository_owner }}/devops
         ref: master
         token: ${{ inputs.gitToken }}
@@ -25,7 +25,7 @@ runs:
     - name: checkout app
       uses: actions/checkout@v4
       with:
-        fetch-depth: 100
+        fetch-depth: ${{ inputs.app-fetch-depth || 1 }}
         clean: true
         token: ${{ inputs.gitToken }}
         persist-credentials: true
@@ -37,14 +37,3 @@ runs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
       working-directory: app
-
-    - name: clear tmp dir
-      shell: bash
-      run: |
-        mkdir -p $TMP_DIR
-        pushd $TMP_DIR
-        rm -rf ./*
-        popd
-        echo "$TMP_DIR is cleared"
-      env:
-        TMP_DIR: ${{ runner.temp }}
