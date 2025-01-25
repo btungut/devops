@@ -64,14 +64,14 @@ runs:
         set -euo pipefail
 
         WORKFLOW_TMP_DIR="./.tmp"
-        WORKFLOW_TMP_DIR=$(cd $WORKFLOW_TMP_DIR && pwd)
-        echo "WORKFLOW_TMP_DIR: $WORKFLOW_TMP_DIR"
 
         echo "clearing $WORKFLOW_TMP_DIR"
         rm -rf $WORKFLOW_TMP_DIR
 
         echo "creating $WORKFLOW_TMP_DIR"
         mkdir -p $WORKFLOW_TMP_DIR
+
+        WORKFLOW_TMP_DIR=$(cd $WORKFLOW_TMP_DIR && pwd)
 
         echo "WORKFLOW_TMP_DIR is ready!"
         echo "workflow-tmp-dir=$WORKFLOW_TMP_DIR" >> $GITHUB_OUTPUT
